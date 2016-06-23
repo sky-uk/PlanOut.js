@@ -3,13 +3,10 @@ var UniformChoice = require('../es6/ops/random').UniformChoice;
 var ExperimentSetup = require('../es6/experimentSetup');
 
 var testerUnit = '4';
-var testerSalt = 'test_salt';
+var testerSalt = 'xtest_salt';
 
 
 describe('Test the assignment module', function() {
-  beforeEach(() => {
-    ExperimentSetup.toggleCompatibleHash(true);
-  })
   it('Should set constants correctly', function() {
     var a = new Assignment(testerSalt);
     a.set('foo', 12);
@@ -24,7 +21,7 @@ describe('Test the assignment module', function() {
 
     expect(a.get('foo')).toEqual('b');
     expect(a.get('bar')).toEqual('a');
-    expect(a.get('baz')).toEqual('a');
+    expect(a.get('baz')).toEqual('b');
   });
 
   it('Should work with overrides', function() {

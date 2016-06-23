@@ -28,7 +28,6 @@ describe("Test the experiment module", function() {
   var validateLog;
   var experimentTester;
   beforeEach(function() {
-    ExperimentSetup.toggleCompatibleHash(true);
     validateLog = function (blob, expectedFields) {
       if (!expectedFields || !blob) { return; }
       Object.keys(expectedFields).forEach(function(field) {
@@ -46,12 +45,12 @@ describe("Test the experiment module", function() {
       var params = e.getParams();
 
       expect(params['foo']).not.toBe(undefined);
-      expect(params['foo']).toEqual('b');
+      expect(params['foo']).toEqual('a');
       expect(params['bar']).toEqual(42);
 
       if (inExperiment) {
         expect(globalLog.length).toEqual(1);
-        validateLog(globalLog[0], { 
+        validateLog(globalLog[0], {
           'inputs': { 'i': null },
           'params': { 'foo': null, 'bar': null}
         });
@@ -127,7 +126,7 @@ describe("Test the experiment module", function() {
   it('should work with an interpreted experiment', function() {
     class TestInterpretedExperiment extends BaseExperiment {
       assign(params, args) {
-        var compiled = 
+        var compiled =
           {"op":"seq",
            "seq": [
             {"op":"set",

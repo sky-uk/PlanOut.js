@@ -9,10 +9,13 @@ module.exports = function(grunt) {
     'webpack': {
       build: {
         progress: true,
-        entry: './index.js',
+        entry: {
+          planout: './index.js',
+          planout_core_compatible: './index_core_compatible.js'
+        },
         output: {
           libraryTarget: 'umd',
-          filename: 'dist/planout.js',
+          filename: 'dist/[name].js',
           library: 'PlanOut'
         },
         module: {
@@ -31,7 +34,8 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
-          'dist/planout.min.js': 'dist/planout.js'
+          'dist/planout.min.js': 'dist/planout.js',
+          'dist/planout_core_compatible.min.js': 'dist/planout_core_compatible.js'
         }
       }
     }
