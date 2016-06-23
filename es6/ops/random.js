@@ -1,5 +1,5 @@
 import { PlanOutOpSimple } from "./base";
-import sha1 from "sha1";
+import Sha1 from "../lib/sha1";
 import { shallowCopy, reduce, isArray } from "../lib/utils";
 import { usingCompatibleHash } from '../experimentSetup';
 
@@ -49,7 +49,7 @@ class PlanOutOpRandom extends PlanOutOpSimple {
       String(element)
     ).join('.');
     var hashStr = fullSalt + "." + unitStr;
-    var hash = sha1(hashStr);
+    var hash = Sha1.hash(hashStr);
     if (usingCompatibleHash()) {
       return new BigNumber(hash.substr(0, 15), 16);
     } else {
