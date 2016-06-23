@@ -59,7 +59,6 @@ describe("Test namespace module", function() {
   var validateLog;
   var validateSegments;
   beforeEach(function() {
-    ExperimentSetup.toggleCompatibleHash(true);
     validateLog = function(exp) {
       expect(globalLog[0].salt).toEqual(`test-${exp}`)
     }
@@ -138,7 +137,7 @@ describe("Test namespace module", function() {
     var namespace = new TestNamespace({'userid': str});
     validateSegments(namespace, { Experiment2: 10 });
   });
-  
+
   it('Should only log exposure when user could be in experiment', function() {
     class TestNamespace extends BaseTestNamespace {
       setupDefaults() {
@@ -151,7 +150,7 @@ describe("Test namespace module", function() {
       }
     }
 
-    var namespace = new TestNamespace({'userid': 'hi'});
+    var namespace = new TestNamespace({'userid': '2'});
     expect(namespace.get('test2')).toEqual(null);
     expect(globalLog.length).toEqual(0);
     expect(namespace.get('test'));
@@ -165,7 +164,7 @@ describe("Test namespace module", function() {
         this.addExperiment('Experiment3', Experiment3, 50);
       }
 
-      allowedOverride() { 
+      allowedOverride() {
         return true;
       }
 
@@ -190,8 +189,8 @@ describe("Test namespace module", function() {
     expect(namespace.get('test2')).toEqual('overridden2');
     validateLog('Experiment3');
   });
-  
-  it('should respect auto exposure logging being set to off', function() { 
+
+  it('should respect auto exposure logging being set to off', function() {
     class ExperimentNoExposure extends BaseExperiment {
       setup() {
         this.setAutoExposureLogging(false);
@@ -318,7 +317,6 @@ describe("Test namespace module", function() {
     }
     var count = 0;
     var total = 10000;
-    ExperimentSetup.toggleCompatibleHash(false)
     for (var i = 0; i < total; i++) {
       ExperimentSetup.registerExperimentInput('userid', i);
       var n = new TestNamespaces();

@@ -56,11 +56,6 @@ function distributionTester(xs, valueMass, N=10000) {
 }
 
 describe('Test randomization ops', function() {
-
-  beforeEach(() => {
-    ExperimentSetup.toggleCompatibleHash(true);
-  });
-
   it('salts correctly', function() {
     var i = 20;
     var a = new Assignment("assign_salt_a");
@@ -97,17 +92,16 @@ describe('Test randomization ops', function() {
       }
       return xs;
     }
-    
-    ExperimentSetup.toggleCompatibleHash(true);
+
     distributionTester(bernoulli(0.0), [{0: 1}, {1: 0}], N);
     distributionTester(bernoulli(0.1), [{0: 0.9}, {1: 0.1}], N);
     distributionTester(bernoulli(1.0), [{0: 0}, {1: 1}], N);
-    ExperimentSetup.toggleCompatibleHash(false);
-    distributionTester(bernoulli(0.0), [{0: 1}, {1: 0}], N);
-    distributionTester(bernoulli(0.1), [{0: 0.9}, {1: 0.1}], N);
-    distributionTester(bernoulli(1.0), [{0: 0}, {1: 1}], N);
+
+    // distributionTester(bernoulli(0.0), [{0: 1}, {1: 0}], N);
+    // distributionTester(bernoulli(0.1), [{0: 0.9}, {1: 0.1}], N);
+    // distributionTester(bernoulli(1.0), [{0: 0}, {1: 1}], N);
   });
-  
+
   it('works for uniform choice', function() {
     var N = 10000;
     function uniformChoice(choices) {
@@ -125,10 +119,6 @@ describe('Test randomization ops', function() {
       distributionTester(uniformChoice(['a', 'b']), [{'a': 1}, {'b': 1}], N);
     };
 
-    ExperimentSetup.toggleCompatibleHash(true);
-    testDistributions();
-
-    ExperimentSetup.toggleCompatibleHash(false);
     testDistributions();
   });
 
@@ -159,10 +149,6 @@ describe('Test randomization ops', function() {
       distributionTester(weightedChoice(da), db, N);
     }
 
-    ExperimentSetup.toggleCompatibleHash(true);
-    testDistributions();
-
-    ExperimentSetup.toggleCompatibleHash(false);
     testDistributions();
   });
 
@@ -182,7 +168,7 @@ describe('Test randomization ops', function() {
       var valueDensity = valueMassToDensity(valueMass);
       var l = [];
 
-      /* bad equivalent to zip() from python */ 
+      /* bad equivalent to zip() from python */
       xsList.forEach(function(xs, i){
         xs.forEach(function(x, j) {
           if (!l[j]) {
@@ -195,7 +181,7 @@ describe('Test randomization ops', function() {
           l.forEach(function(el) {
             assertProbs(el, valueDensity, N);
           });
-        }       
+        }
       });
     }
 
@@ -209,15 +195,10 @@ describe('Test randomization ops', function() {
       listDistributionTester(sample(a, 3), ret, N);
     }
 
-    ExperimentSetup.toggleCompatibleHash(true);
-    testDistributions();
-
-    ExperimentSetup.toggleCompatibleHash(false);
     testDistributions();
   });
 
   it('works with more efficient sample', function() {
-    ExperimentSetup.toggleCompatibleHash(false);
     var choices = [1, 2, 3, 4, 5, 6, 7];
     var draws = 5;
 
