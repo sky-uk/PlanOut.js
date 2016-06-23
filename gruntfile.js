@@ -1,7 +1,7 @@
 var webpack = require('webpack');
 
 module.exports = function(grunt) {
-	require('load-grunt-tasks')(grunt); 
+	require('load-grunt-tasks')(grunt);
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-webpack');
 
@@ -27,6 +27,18 @@ module.exports = function(grunt) {
         }
       }
     },
+    'babel': {
+        options: {
+        },
+        dist: {
+            files:[{
+                expand: true,
+                cwd: 'es6/',
+                src: ['**/*.js'],
+                dest: 'lib/'
+            }]
+        }
+    },
     'uglify': {
       options: {
         sourceMap: true,
@@ -40,6 +52,6 @@ module.exports = function(grunt) {
       }
     }
    });
-	 
-	grunt.registerTask('default', ['webpack', 'uglify']);
+
+	grunt.registerTask('default', ['babel', 'webpack', 'uglify']);
 }
