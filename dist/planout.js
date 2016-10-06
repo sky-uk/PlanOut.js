@@ -64,7 +64,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _experiment2 = _interopRequireDefault(_experiment);
 
-	var _interpreter = __webpack_require__(9);
+	var _interpreter = __webpack_require__(7);
 
 	var _interpreter2 = _interopRequireDefault(_interpreter);
 
@@ -72,11 +72,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _random2 = _interopRequireDefault(_random);
 
-	var _core = __webpack_require__(11);
+	var _core = __webpack_require__(9);
 
 	var _core2 = _interopRequireDefault(_core);
 
-	var _namespace = __webpack_require__(12);
+	var _namespace = __webpack_require__(10);
 
 	var Namespace = _interopRequireWildcard(_namespace);
 
@@ -84,7 +84,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _assignment2 = _interopRequireDefault(_assignment);
 
-	var _experimentSetup = __webpack_require__(13);
+	var _experimentSetup = __webpack_require__(11);
 
 	var _experimentSetup2 = _interopRequireDefault(_experimentSetup);
 
@@ -284,7 +284,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: '__asBlob',
 	    value: function __asBlob() {
-	      var extras = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	      var extras = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 	      var d = {
 	        'name': this.getName(),
@@ -574,8 +574,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: "getUniform",
 	    value: function getUniform() {
-	      var minVal = arguments.length <= 0 || arguments[0] === undefined ? 0.0 : arguments[0];
-	      var maxVal = arguments.length <= 1 || arguments[1] === undefined ? 1.0 : arguments[1];
+	      var minVal = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0.0;
+	      var maxVal = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1.0;
 	      var appendedUnit = arguments[2];
 
 	      var zeroToOne = this.compatZeroToOneCalculation(appendedUnit);
@@ -596,7 +596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return String(element);
 	      }).join('.');
 	      var hashStr = fullSalt + unitStr;
-	      var hash = (0, _sha2.default)(hashStr);
+	      var hash = _sha2.default.hash(hashStr);
 	      return this.compatHashCalculation(hash);
 	    }
 	  }]);
@@ -1097,7 +1097,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	/*  Most of these functions are from the wonderful Underscore package http://underscorejs.org/
 	    This file exists so that the planoutjs library doesn't depend on a few unneeded third party dependencies
@@ -1384,235 +1384,151 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	(function() {
-	  var crypt = __webpack_require__(7),
-	      utf8 = __webpack_require__(8).utf8,
-	      bin = __webpack_require__(8).bin,
+	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+	/*  SHA-1 implementation in JavaScript                  (c) Chris Veness 2002-2014 / MIT Licence  */
+	/*                                                                                                */
+	/*  - see http://csrc.nist.gov/groups/ST/toolkit/secure_hashing.html                              */
+	/*        http://csrc.nist.gov/groups/ST/toolkit/examples.html                                    */
+	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-	  // The core
-	  sha1 = function (message) {
-	    // Convert to byte array
-	    if (message.constructor == String)
-	      message = utf8.stringToBytes(message);
-	    else if (typeof Buffer !== 'undefined' && typeof Buffer.isBuffer == 'function' && Buffer.isBuffer(message))
-	      message = Array.prototype.slice.call(message, 0);
-	    else if (!Array.isArray(message))
-	      message = message.toString();
+	/* jshint node:true */ /* global define, escape, unescape */
+	'use strict';
 
-	    // otherwise assume byte array
+	/**
+	 * SHA-1 hash function reference implementation.
+	 *
+	 * @namespace
+	 */
 
-	    var m  = crypt.bytesToWords(message),
-	        l  = message.length * 8,
-	        w  = [],
-	        H0 =  1732584193,
-	        H1 = -271733879,
-	        H2 = -1732584194,
-	        H3 =  271733878,
-	        H4 = -1009589776;
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var Sha1 = {};
 
-	    // Padding
-	    m[l >> 5] |= 0x80 << (24 - l % 32);
-	    m[((l + 64 >>> 9) << 4) + 15] = l;
+	/**
+	 * Generates SHA-1 hash of string.
+	 *
+	 * @param   {string} msg - (Unicode) string to be hashed.
+	 * @returns {string} Hash of msg as hex character string.
+	 */
+	Sha1.hash = function (msg) {
+	    // convert string to UTF-8, as SHA only deals with byte-streams
+	    msg = unescape(encodeURIComponent(msg));
 
-	    for (var i = 0; i < m.length; i += 16) {
-	      var a = H0,
-	          b = H1,
-	          c = H2,
-	          d = H3,
-	          e = H4;
+	    // constants [§4.2.1]
+	    var K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
 
-	      for (var j = 0; j < 80; j++) {
+	    // PREPROCESSING
 
-	        if (j < 16)
-	          w[j] = m[i + j];
-	        else {
-	          var n = w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16];
-	          w[j] = (n << 1) | (n >>> 31);
+	    msg += String.fromCharCode(0x80); // add trailing '1' bit (+ 0's padding) to string [§5.1.1]
+
+	    // convert string msg into 512-bit/16-integer blocks arrays of ints [§5.2.1]
+	    var l = msg.length / 4 + 2; // length (in 32-bit integers) of msg + ‘1’ + appended length
+	    var N = Math.ceil(l / 16); // number of 16-integer-blocks required to hold 'l' ints
+	    var M = new Array(N);
+
+	    for (var i = 0; i < N; i++) {
+	        M[i] = new Array(16);
+	        for (var j = 0; j < 16; j++) {
+	            // encode 4 chars per integer, big-endian encoding
+	            M[i][j] = msg.charCodeAt(i * 64 + j * 4) << 24 | msg.charCodeAt(i * 64 + j * 4 + 1) << 16 | msg.charCodeAt(i * 64 + j * 4 + 2) << 8 | msg.charCodeAt(i * 64 + j * 4 + 3);
+	        } // note running off the end of msg is ok 'cos bitwise ops on NaN return 0
+	    }
+	    // add length (in bits) into final pair of 32-bit integers (big-endian) [§5.1.1]
+	    // note: most significant word would be (len-1)*8 >>> 32, but since JS converts
+	    // bitwise-op args to 32 bits, we need to simulate this by arithmetic operators
+	    M[N - 1][14] = (msg.length - 1) * 8 / Math.pow(2, 32);M[N - 1][14] = Math.floor(M[N - 1][14]);
+	    M[N - 1][15] = (msg.length - 1) * 8 & 0xffffffff;
+
+	    // set initial hash value [§5.3.1]
+	    var H0 = 0x67452301;
+	    var H1 = 0xefcdab89;
+	    var H2 = 0x98badcfe;
+	    var H3 = 0x10325476;
+	    var H4 = 0xc3d2e1f0;
+
+	    // HASH COMPUTATION [§6.1.2]
+
+	    var W = new Array(80);var a, b, c, d, e;
+	    for (var i = 0; i < N; i++) {
+
+	        // 1 - prepare message schedule 'W'
+	        for (var t = 0; t < 16; t++) {
+	            W[t] = M[i][t];
+	        }for (var t = 16; t < 80; t++) {
+	            W[t] = Sha1.ROTL(W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16], 1);
+	        } // 2 - initialise five working variables a, b, c, d, e with previous hash value
+	        a = H0;b = H1;c = H2;d = H3;e = H4;
+
+	        // 3 - main loop
+	        for (var t = 0; t < 80; t++) {
+	            var s = Math.floor(t / 20); // seq for blocks of 'f' functions and 'K' constants
+	            var T = Sha1.ROTL(a, 5) + Sha1.f(s, b, c, d) + e + K[s] + W[t] & 0xffffffff;
+	            e = d;
+	            d = c;
+	            c = Sha1.ROTL(b, 30);
+	            b = a;
+	            a = T;
 	        }
 
-	        var t = ((H0 << 5) | (H0 >>> 27)) + H4 + (w[j] >>> 0) + (
-	                j < 20 ? (H1 & H2 | ~H1 & H3) + 1518500249 :
-	                j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
-	                j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
-	                         (H1 ^ H2 ^ H3) - 899497514);
-
-	        H4 = H3;
-	        H3 = H2;
-	        H2 = (H1 << 30) | (H1 >>> 2);
-	        H1 = H0;
-	        H0 = t;
-	      }
-
-	      H0 += a;
-	      H1 += b;
-	      H2 += c;
-	      H3 += d;
-	      H4 += e;
+	        // 4 - compute the new intermediate hash value (note 'addition modulo 2^32')
+	        H0 = H0 + a & 0xffffffff;
+	        H1 = H1 + b & 0xffffffff;
+	        H2 = H2 + c & 0xffffffff;
+	        H3 = H3 + d & 0xffffffff;
+	        H4 = H4 + e & 0xffffffff;
 	    }
 
-	    return [H0, H1, H2, H3, H4];
-	  },
+	    return Sha1.toHexStr(H0) + Sha1.toHexStr(H1) + Sha1.toHexStr(H2) + Sha1.toHexStr(H3) + Sha1.toHexStr(H4);
+	};
 
-	  // Public API
-	  api = function (message, options) {
-	    var digestbytes = crypt.wordsToBytes(sha1(message));
-	    return options && options.asBytes ? digestbytes :
-	        options && options.asString ? bin.bytesToString(digestbytes) :
-	        crypt.bytesToHex(digestbytes);
-	  };
+	/**
+	 * Function 'f' [§4.1.1].
+	 * @private
+	 */
+	Sha1.f = function (s, x, y, z) {
+	    switch (s) {
+	        case 0:
+	            return x & y ^ ~x & z; // Ch()
+	        case 1:
+	            return x ^ y ^ z; // Parity()
+	        case 2:
+	            return x & y ^ x & z ^ y & z; // Maj()
+	        case 3:
+	            return x ^ y ^ z; // Parity()
+	    }
+	};
 
-	  api._blocksize = 16;
-	  api._digestsize = 20;
+	/**
+	 * Rotates left (circular left shift) value x by n positions [§3.2.5].
+	 * @private
+	 */
+	Sha1.ROTL = function (x, n) {
+	    return x << n | x >>> 32 - n;
+	};
 
-	  module.exports = api;
-	})();
+	/**
+	 * Hexadecimal representation of a number.
+	 * @private
+	 */
+	Sha1.toHexStr = function (n) {
+	    // note can't use toString(16) as it is implementation-dependant,
+	    // and in IE returns signed numbers when used on full words
+	    var s = "",
+	        v;
+	    for (var i = 7; i >= 0; i--) {
+	        v = n >>> i * 4 & 0xf;s += v.toString(16);
+	    }
+	    return s;
+	};
 
+	exports.default = Sha1;
+	module.exports = exports["default"];
 
 /***/ },
 /* 7 */
-/***/ function(module, exports) {
-
-	(function() {
-	  var base64map
-	      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
-
-	  crypt = {
-	    // Bit-wise rotation left
-	    rotl: function(n, b) {
-	      return (n << b) | (n >>> (32 - b));
-	    },
-
-	    // Bit-wise rotation right
-	    rotr: function(n, b) {
-	      return (n << (32 - b)) | (n >>> b);
-	    },
-
-	    // Swap big-endian to little-endian and vice versa
-	    endian: function(n) {
-	      // If number given, swap endian
-	      if (n.constructor == Number) {
-	        return crypt.rotl(n, 8) & 0x00FF00FF | crypt.rotl(n, 24) & 0xFF00FF00;
-	      }
-
-	      // Else, assume array and swap all items
-	      for (var i = 0; i < n.length; i++)
-	        n[i] = crypt.endian(n[i]);
-	      return n;
-	    },
-
-	    // Generate an array of any length of random bytes
-	    randomBytes: function(n) {
-	      for (var bytes = []; n > 0; n--)
-	        bytes.push(Math.floor(Math.random() * 256));
-	      return bytes;
-	    },
-
-	    // Convert a byte array to big-endian 32-bit words
-	    bytesToWords: function(bytes) {
-	      for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
-	        words[b >>> 5] |= bytes[i] << (24 - b % 32);
-	      return words;
-	    },
-
-	    // Convert big-endian 32-bit words to a byte array
-	    wordsToBytes: function(words) {
-	      for (var bytes = [], b = 0; b < words.length * 32; b += 8)
-	        bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
-	      return bytes;
-	    },
-
-	    // Convert a byte array to a hex string
-	    bytesToHex: function(bytes) {
-	      for (var hex = [], i = 0; i < bytes.length; i++) {
-	        hex.push((bytes[i] >>> 4).toString(16));
-	        hex.push((bytes[i] & 0xF).toString(16));
-	      }
-	      return hex.join('');
-	    },
-
-	    // Convert a hex string to a byte array
-	    hexToBytes: function(hex) {
-	      for (var bytes = [], c = 0; c < hex.length; c += 2)
-	        bytes.push(parseInt(hex.substr(c, 2), 16));
-	      return bytes;
-	    },
-
-	    // Convert a byte array to a base-64 string
-	    bytesToBase64: function(bytes) {
-	      for (var base64 = [], i = 0; i < bytes.length; i += 3) {
-	        var triplet = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-	        for (var j = 0; j < 4; j++)
-	          if (i * 8 + j * 6 <= bytes.length * 8)
-	            base64.push(base64map.charAt((triplet >>> 6 * (3 - j)) & 0x3F));
-	          else
-	            base64.push('=');
-	      }
-	      return base64.join('');
-	    },
-
-	    // Convert a base-64 string to a byte array
-	    base64ToBytes: function(base64) {
-	      // Remove non-base-64 characters
-	      base64 = base64.replace(/[^A-Z0-9+\/]/ig, '');
-
-	      for (var bytes = [], i = 0, imod4 = 0; i < base64.length;
-	          imod4 = ++i % 4) {
-	        if (imod4 == 0) continue;
-	        bytes.push(((base64map.indexOf(base64.charAt(i - 1))
-	            & (Math.pow(2, -2 * imod4 + 8) - 1)) << (imod4 * 2))
-	            | (base64map.indexOf(base64.charAt(i)) >>> (6 - imod4 * 2)));
-	      }
-	      return bytes;
-	    }
-	  };
-
-	  module.exports = crypt;
-	})();
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports) {
-
-	var charenc = {
-	  // UTF-8 encoding
-	  utf8: {
-	    // Convert a string to a byte array
-	    stringToBytes: function(str) {
-	      return charenc.bin.stringToBytes(unescape(encodeURIComponent(str)));
-	    },
-
-	    // Convert a byte array to a string
-	    bytesToString: function(bytes) {
-	      return decodeURIComponent(escape(charenc.bin.bytesToString(bytes)));
-	    }
-	  },
-
-	  // Binary encoding
-	  bin: {
-	    // Convert a string to a byte array
-	    stringToBytes: function(str) {
-	      for (var bytes = [], i = 0; i < str.length; i++)
-	        bytes.push(str.charCodeAt(i) & 0xFF);
-	      return bytes;
-	    },
-
-	    // Convert a byte array to a string
-	    bytesToString: function(bytes) {
-	      for (var str = [], i = 0; i < bytes.length; i++)
-	        str.push(String.fromCharCode(bytes[i]));
-	      return str.join('');
-	    }
-	  }
-	};
-
-	module.exports = charenc;
-
-
-/***/ },
-/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1627,7 +1543,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _assignment2 = _interopRequireDefault(_assignment);
 
-	var _utils = __webpack_require__(10);
+	var _utils = __webpack_require__(8);
 
 	var _utils2 = __webpack_require__(5);
 
@@ -1637,8 +1553,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Interpreter = function () {
 	  function Interpreter(serialization) {
-	    var experimentSalt = arguments.length <= 1 || arguments[1] === undefined ? 'global_salt' : arguments[1];
-	    var inputs = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+	    var experimentSalt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'global_salt';
+	    var inputs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 	    var environment = arguments[3];
 
 	    _classCallCheck(this, Interpreter);
@@ -1755,7 +1671,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 10 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1765,7 +1681,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.registerOperators = exports.StopPlanOutException = exports.operatorInstance = exports.isOperator = exports.initFactory = exports.operators = undefined;
 
-	var _core = __webpack_require__(11);
+	var _core = __webpack_require__(9);
 
 	var core = _interopRequireWildcard(_core);
 
@@ -1857,7 +1773,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.registerOperators = registerOperators;
 
 /***/ },
-/* 11 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1871,7 +1787,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _base = __webpack_require__(4);
 
-	var _utils = __webpack_require__(10);
+	var _utils = __webpack_require__(8);
 
 	var _utils2 = __webpack_require__(5);
 
@@ -2507,7 +2423,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Return = Return;
 
 /***/ },
-/* 12 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2533,7 +2449,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(5);
 
-	var _experimentSetup = __webpack_require__(13);
+	var _experimentSetup = __webpack_require__(11);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2925,7 +2841,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.SimpleNamespace = SimpleNamespace;
 
 /***/ },
-/* 13 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
